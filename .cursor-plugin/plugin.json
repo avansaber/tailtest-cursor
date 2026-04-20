@@ -1,0 +1,17 @@
+{
+  "name": "tailtest-cursor",
+  "displayName": "Tailtest",
+  "description": "Auto-generates and runs tests every time the agent edits a file. Silent on pass, interrupts on failure.",
+  "version": "1.0.0",
+  "author": { "name": "avansaber" },
+  "homepage": "https://tailtest.com",
+  "repository": "https://github.com/avansaber/tailtest-cursor",
+  "license": "MIT",
+  "logo": "assets/avatar.png",
+  "keywords": ["testing", "tdd", "test-generation", "hooks"],
+  "category": "developer-tools",
+  "tags": ["automation", "testing", "quality"],
+  "hooks": "./hooks/hooks.json",
+  "rules": "./rules/",
+  "skills": "./skills/"
+}
