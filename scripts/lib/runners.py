@@ -144,7 +144,8 @@ def detect_ruby_runner(directory: str, project_root: str) -> Optional[dict]:
     if not os.path.exists(gemfile_path):
         return None
     try:
-        content = open(gemfile_path).read()
+        with open(gemfile_path) as fh:
+            content = fh.read()
     except OSError:
         return None
 
@@ -202,7 +203,8 @@ def detect_java_runner(directory: str, project_root: str) -> Optional[dict]:
             "build.gradle" if os.path.exists(os.path.join(directory, "build.gradle"))
             else "build.gradle.kts"
         )
-        content = open(os.path.join(directory, build_file)).read()
+        with open(os.path.join(directory, build_file)) as fh:
+            content = fh.read()
         if "spring-boot" in content:
             framework = "spring"
     except OSError:

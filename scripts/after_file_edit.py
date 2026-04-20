@@ -31,7 +31,7 @@ def main() -> None:
         event = {}
 
     file_path: str = event.get("file_path", "")
-    if not file_path:
+    if not file_path or not os.path.isabs(file_path):
         return
 
     workspace_roots = event.get("workspace_roots", [])
