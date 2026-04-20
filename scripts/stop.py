@@ -21,8 +21,10 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(SCRIPT_DIR, "lib"))
 
+from complexity_scorer import complexity_context_note, score_file
 from filter import RUNNER_REQUIRED_LANGUAGES
 from last_failures_formatter import compute_last_failures
+from scenario_log import append_to_log, build_scenario_entries
 from session import load_session, save_session
 
 
@@ -66,6 +68,25 @@ def main() -> None:
     # Clear BEFORE returning -- prevents re-trigger on next stop
     session["pending_files"] = []
     session["last_failures"] = compute_last_failures(session)
+
+    # H3: append scenario log entries
+    new_entries = build_scenario_entries(session)
+    if new_entries:
+        session["scenario_log"] = append_to_log(session.get("scenario_log", []), new_entries)
+
+    # H1: store complexity scores for pending files
+    scores = session.get("complexity_scores", {})
+    configured_depth = session.get("depth", "standard")
+    for entry in qualified:
+        p = entry.get("path", "")
+        if p:
+            try:
+                sc, _ = score_file(os.path.join(project_root, p))
+                scores[p] = sc
+            except Exception:
+                pass
+    session["complexity_scores"] = scores
+
     try:
         save_session(project_root, session)
     except OSError:
@@ -77,7 +98,9 @@ def main() -> None:
         lang = entry.get("language", "unknown")
         runner_info = runners.get(lang) or (next(iter(runners.values())) if runners else None)
         runner_cmd = runner_info.get("command", "?") if runner_info else "?"
-        parts.append(f"{path} ({lang}, {runner_cmd})")
+        hint = complexity_context_note(os.path.join(project_root, path), configured_depth)
+        hint_str = f", {hint}" if hint else ""
+        parts.append(f"{path} ({lang}, {runner_cmd}{hint_str})")
 
     n = len(qualified)
     listed = parts[:5]
