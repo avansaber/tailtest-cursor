@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.join(SCRIPT_DIR, "lib"))
 
 from complexity_scorer import complexity_context_note, score_file
 from filter import RUNNER_REQUIRED_LANGUAGES
+from history_manager import append_session_to_history
 from last_failures_formatter import compute_last_failures
 from scenario_log import append_to_log, build_scenario_entries
 from session import load_session, save_session
@@ -73,6 +74,11 @@ def main() -> None:
     new_entries = build_scenario_entries(session)
     if new_entries:
         session["scenario_log"] = append_to_log(session.get("scenario_log", []), new_entries)
+        # A1: persist to cross-session history
+        try:
+            append_session_to_history(project_root, new_entries)
+        except Exception:
+            pass
 
     # H1: store complexity scores for pending files
     scores = session.get("complexity_scores", {})
