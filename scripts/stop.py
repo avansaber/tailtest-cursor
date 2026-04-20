@@ -22,6 +22,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(SCRIPT_DIR, "lib"))
 
 from filter import RUNNER_REQUIRED_LANGUAGES
+from last_failures_formatter import compute_last_failures
 from session import load_session, save_session
 
 
@@ -64,6 +65,7 @@ def main() -> None:
 
     # Clear BEFORE returning -- prevents re-trigger on next stop
     session["pending_files"] = []
+    session["last_failures"] = compute_last_failures(session)
     try:
         save_session(project_root, session)
     except OSError:
