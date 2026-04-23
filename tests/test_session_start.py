@@ -146,6 +146,33 @@ class TestRunnerDetection:
         assert py_runner is not None
         assert py_runner.get("async_framework") == "pytest-asyncio"
 
+    # V12.2 NestJS + Flask
+
+    def test_nestjs_framework_detected(self, tmp_path):
+        pkg = {
+            "dependencies": {"@nestjs/core": "10.0.0"},
+            "devDependencies": {"vitest": "^1.0.0"},
+        }
+        (tmp_path / "package.json").write_text(json.dumps(pkg))
+        _run_hook(tmp_path)
+        with open(_state_path(tmp_path)) as fh:
+            session = json.load(fh)
+        runners = session.get("runners", {})
+        ts_or_js = runners.get("typescript") or runners.get("javascript")
+        assert ts_or_js is not None
+        assert ts_or_js.get("framework") == "nestjs"
+
+    def test_flask_framework_detected(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\ndependencies = ["flask", "pytest"]\n'
+        )
+        _run_hook(tmp_path)
+        with open(_state_path(tmp_path)) as fh:
+            session = json.load(fh)
+        py_runner = session.get("runners", {}).get("python")
+        assert py_runner is not None
+        assert py_runner.get("framework") == "flask"
+
 
 # ---------------------------------------------------------------------------
 # Session state file created

@@ -2,6 +2,16 @@
 
 All notable changes to tailtest-cursor will be documented in this file.
 
+## [1.3.0] - 2026-04-23
+
+NestJS and Flask framework support. 148 tests.
+
+**NestJS detection:** Projects with `@nestjs/core` in dependencies register as `framework: nestjs`. NestJS is checked before Next.js (more specific signal). R2 row + S-rules entry covers Test.createTestingModule, provider overrides, controller vs microservice variants.
+
+**Flask detection:** Projects with `flask` in pyproject deps register as `framework: flask`. For the rare both-declared case (flask + fastapi), entry-point file inspection picks the right one. Falls back to fastapi for ambiguous cases. R2 row + S-rules entry covers test_client, app context, blueprints, pytest-flask.
+
+**S-rules additions:** New NestJS and Flask entries.
+
 ## [1.2.0] - 2026-04-23
 
 Spring Boot R2 baseline + Bun test, Deno test, pytest-asyncio detection. 146 tests.
