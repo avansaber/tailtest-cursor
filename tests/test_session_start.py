@@ -102,6 +102,50 @@ class TestRunnerDetection:
         out = _run_hook(tmp_path)
         assert "additional_context" in out
 
+    # V12.1 Bun / Deno / pytest-asyncio integration
+
+    def test_bun_test_script_detected(self, tmp_path):
+        pkg = {"scripts": {"test": "bun test"}}
+        (tmp_path / "package.json").write_text(json.dumps(pkg))
+        _run_hook(tmp_path)
+        with open(_state_path(tmp_path)) as fh:
+            session = json.load(fh)
+        runners = session.get("runners", {})
+        ts_or_js = runners.get("typescript") or runners.get("javascript")
+        assert ts_or_js is not None
+        assert ts_or_js["command"] == "bun test"
+
+    def test_bunfig_toml_detected(self, tmp_path):
+        (tmp_path / "package.json").write_text(json.dumps({"name": "myapp"}))
+        (tmp_path / "bunfig.toml").write_text("")
+        _run_hook(tmp_path)
+        with open(_state_path(tmp_path)) as fh:
+            session = json.load(fh)
+        runners = session.get("runners", {})
+        ts_or_js = runners.get("typescript") or runners.get("javascript")
+        assert ts_or_js is not None
+        assert ts_or_js["command"] == "bun test"
+
+    def test_deno_json_detected(self, tmp_path):
+        (tmp_path / "deno.json").write_text("{}")
+        _run_hook(tmp_path)
+        with open(_state_path(tmp_path)) as fh:
+            session = json.load(fh)
+        runners = session.get("runners", {})
+        assert "typescript" in runners
+        assert runners["typescript"]["command"] == "deno test"
+
+    def test_pytest_asyncio_records_async_framework(self, tmp_path):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\ndependencies = ["pytest", "pytest-asyncio"]\n'
+        )
+        _run_hook(tmp_path)
+        with open(_state_path(tmp_path)) as fh:
+            session = json.load(fh)
+        py_runner = session.get("runners", {}).get("python")
+        assert py_runner is not None
+        assert py_runner.get("async_framework") == "pytest-asyncio"
+
 
 # ---------------------------------------------------------------------------
 # Session state file created

@@ -69,6 +69,7 @@ def detect_python_runner(directory: str, project_root: str) -> Optional[dict]:
 
     text = _read_toml_text(pyproject_path) or ""
     has_pytest = "[tool.pytest" in text or "pytest" in text
+    has_pytest_asyncio = "pytest-asyncio" in text
 
     raw_loc = _find_test_location(directory, "python") or "tests/"
 
@@ -91,6 +92,8 @@ def detect_python_runner(directory: str, project_root: str) -> Optional[dict]:
     }
     if framework:
         runner["framework"] = framework
+    if has_pytest_asyncio:
+        runner["async_framework"] = "pytest-asyncio"
     return runner
 
 
@@ -233,9 +236,12 @@ def detect_node_runner(directory: str, project_root: str) -> Optional[dict]:
     all_deps = {**deps, **dev_deps}
 
     scripts_text = " ".join(scripts.values())
+    test_script = scripts.get("test", "")
+    has_bunfig = os.path.exists(os.path.join(directory, "bunfig.toml"))
 
     has_vitest = "vitest" in all_deps or "vitest" in scripts_text
     has_jest = "jest" in all_deps or "jest" in scripts_text
+    has_bun = "bun test" in test_script or has_bunfig
 
     raw_loc = _find_test_location(directory, "javascript") or "__tests__/"
 
@@ -244,8 +250,25 @@ def detect_node_runner(directory: str, project_root: str) -> Optional[dict]:
     if rel_loc == "./":
         rel_loc = raw_loc
 
-    command = "vitest" if has_vitest else ("jest" if has_jest else "vitest")
-    args = ["run"] if command == "vitest" else ["--passWithNoTests"]
+    # Precedence (highest to lowest):
+    # 1. Explicit `test` script names a runner
+    # 2. Runner is in deps (vitest > jest legacy preference)
+    # 3. bunfig.toml exists (tiebreaker for bun)
+    # 4. Default vitest fallback
+    if "bun test" in test_script:
+        command, args = "bun test", []
+    elif "vitest" in test_script:
+        command, args = "vitest", ["run"]
+    elif "jest" in test_script:
+        command, args = "jest", ["--passWithNoTests"]
+    elif has_vitest:
+        command, args = "vitest", ["run"]
+    elif has_jest:
+        command, args = "jest", ["--passWithNoTests"]
+    elif has_bunfig:
+        command, args = "bun test", []
+    else:
+        command, args = "vitest", ["run"]
 
     framework = None
     if "next" in all_deps:
@@ -261,11 +284,27 @@ def detect_node_runner(directory: str, project_root: str) -> Optional[dict]:
         "command": command,
         "args": args,
         "test_location": rel_loc,
-        "needs_bootstrap": not (has_vitest or has_jest),
+        "needs_bootstrap": not (has_vitest or has_jest or has_bun),
     }
     if framework:
         runner["framework"] = framework
     return runner
+
+
+def detect_deno_runner(directory: str, project_root: str) -> Optional[dict]:
+    """Detect Deno test runner from deno.json or deno.jsonc."""
+    has_deno_json = (
+        os.path.exists(os.path.join(directory, "deno.json")) or
+        os.path.exists(os.path.join(directory, "deno.jsonc"))
+    )
+    if not has_deno_json:
+        return None
+    return {
+        "command": "deno test",
+        "args": [],
+        "test_location": ".",
+        "style": "colocated",
+    }
 
 
 def _find_test_location(directory: str, language: str) -> Optional[str]:
@@ -306,6 +345,10 @@ def scan_runners(project_root: str) -> dict:
                 runners["typescript"] = node
             else:
                 runners["javascript"] = node
+        elif "typescript" not in runners and "javascript" not in runners:
+            deno = detect_deno_runner(directory, project_root)
+            if deno:
+                runners["typescript"] = deno
         php = detect_php_runner(directory, project_root)
         if php and "php" not in runners:
             runners["php"] = php
@@ -391,6 +434,10 @@ def scan_packages(project_root: str) -> dict:
                 os.path.join(directory, "tsconfig.json")
             ) else "javascript"
             runners[key] = {k: v for k, v in node.items() if k != "needs_bootstrap"}
+        else:
+            deno = detect_deno_runner(directory, project_root)
+            if deno:
+                runners["typescript"] = deno
         php = detect_php_runner(directory, project_root)
         if php:
             runners["php"] = php
