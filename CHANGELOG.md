@@ -2,6 +2,18 @@
 
 All notable changes to tailtest-cursor will be documented in this file.
 
+## [1.5.0] - 2026-04-23
+
+C# / .NET language support. 149 tests.
+
+**Detection:** New `detect_dotnet_runner` picks up projects with `*.csproj`, `*.sln`, or `global.json`. Runner is `dotnet test`. Enumerates test projects into `runners.csharp.test_projects` for per-source-file resolution at test-write time.
+
+**R1 baseline:** `null`, `default(T)`, empty `IEnumerable<T>`, `ArgumentNullException`, zero / negative numeric.
+
+**Scenario rules:** xUnit, NUnit, MSTest patterns; Moq for mocking; avoid mocking DbContext; `WebApplicationFactory<Program>` for ASP.NET Core integration; determinism guidance.
+
+**Monorepo detection:** `*.sln` at project root now marks a project as monorepo-like.
+
 ## [1.4.0] - 2026-04-23
 
 Kotlin language support. 148 tests.

@@ -173,6 +173,27 @@ class TestRunnerDetection:
         assert py_runner is not None
         assert py_runner.get("framework") == "flask"
 
+    # V12.4 C# / .NET
+
+    def test_csharp_single_test_project(self, tmp_path):
+        api = tmp_path / "MyApp.Api"
+        api.mkdir()
+        (api / "MyApp.Api.csproj").write_text('<Project Sdk="Microsoft.NET.Sdk"></Project>\n')
+        tests = tmp_path / "MyApp.Api.Tests"
+        tests.mkdir()
+        (tests / "MyApp.Api.Tests.csproj").write_text(
+            '<Project Sdk="Microsoft.NET.Sdk">\n'
+            '  <ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" /></ItemGroup>\n'
+            '</Project>\n'
+        )
+        _run_hook(tmp_path)
+        with open(_state_path(tmp_path)) as fh:
+            session = json.load(fh)
+        cs_runner = session.get("runners", {}).get("csharp")
+        assert cs_runner is not None
+        assert cs_runner["command"] == "dotnet test"
+        assert cs_runner["test_location"] == "MyApp.Api.Tests/"
+
 
 # ---------------------------------------------------------------------------
 # Session state file created
