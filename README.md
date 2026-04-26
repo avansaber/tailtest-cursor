@@ -47,11 +47,16 @@ See [tailtest.com/docs/config](https://tailtest.com/docs/config) for all options
 
 ---
 
-## Related
+## Other tailtest variants
 
-- [tailtest for Claude Code](https://github.com/avansaber/tailtest)
-- [tailtest for Codex CLI](https://github.com/avansaber/tailtest-codex)
-- [tailtest.com](https://tailtest.com)
+Same R1-R15 rule layer, same adversarial test mode, different host integration. **This repo is the Cursor variant.**
+
+- **[tailtest](https://github.com/avansaber/tailtest)** -- Claude Code plugin (hook-driven)
+- **[tailtest-cursor](https://github.com/avansaber/tailtest-cursor)** -- Cursor plugin (hook-driven; this repo)
+- **[tailtest-codex](https://github.com/avansaber/tailtest-codex)** -- Codex CLI plugin (hook-driven)
+- **[tailtest-cline](https://github.com/avansaber/tailtest-cline)** -- Cline plugin (MCP-driven; reaches 8+ editors via Cline's host coverage)
+
+See [tailtest.com/comparison](https://tailtest.com/comparison) for a feature matrix and [tailtest.com](https://tailtest.com) for the project home page.
 
 ---
 
