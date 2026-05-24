@@ -1,8 +1,15 @@
-# tailtest for Cursor
+# tailtest-cursor -- AI software testing for Cursor IDE
 
-tailtest fires a test cycle at the end of every Cursor agent turn -- automatically, with no prompting.
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-181_passing-emerald)](https://github.com/avansaber/tailtest-cursor)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue)](https://github.com/avansaber/tailtest-cursor/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-macOS_%7C_Linux-lightgrey)](https://tailtest.com/platform/agent-edits/)
 
-**[Full documentation at tailtest.com/docs/cursor](https://tailtest.com/docs/cursor)**
+**tailtest-cursor** is the open-source AI software testing layer for [Cursor IDE](https://cursor.com). It hooks into Cursor's `afterFileEdit` event: every time Cursor's AI agent edits a file, tailtest queues the file, generates production-shaped scenarios via the R1-R15 rule layer, runs them with your project's existing test runner, and surfaces failures back to Cursor. Hook-based. Deterministic. No prompting required.
+
+Open source (MIT), no telemetry, no SaaS account. Same R1-R15 rule layer + adversarial mode (R15) as the Claude Code, Codex CLI, and Cline variants -- 1,234 plugin tests total across the four hosts.
+
+**[Read more on tailtest.com](https://www.tailtest.com/) · [Platform overview](https://www.tailtest.com/platform/) · [Agent-edit testing deep dive](https://www.tailtest.com/platform/agent-edits/) · [Cursor docs](https://www.tailtest.com/docs/cursor/)**
 
 ---
 
