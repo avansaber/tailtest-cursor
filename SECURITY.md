@@ -13,7 +13,7 @@ tailtest-cursor is a Cursor plugin that hooks into Cursor's agent lifecycle. The
 
 ## Reporting vulnerabilities
 
-To report a security vulnerability, email security@avansaber.com.
+To report a security vulnerability, email support@avansaber.com.
 
 Please include:
 - A description of the vulnerability
