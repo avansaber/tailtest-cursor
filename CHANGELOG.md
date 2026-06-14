@@ -2,6 +2,16 @@
 
 All notable changes to tailtest-cursor will be documented in this file.
 
+## [1.7.0] - 2026-06-13
+
+Cursor 3.7 compatibility fix. 182 tests.
+
+**Bug fix -- `afterFileEdit` relative path (Cursor 3.7.36+):** Cursor 3.7 sends `file_path` as a project-relative path (e.g. `"src/billing.py"`) rather than an absolute path. The previous guard `if not os.path.isabs(file_path): return` caused every edit to silently no-op. Fix: when `file_path` is relative, resolve it against `workspace_roots[0]` before the isabs check. Absolute paths continue to work unchanged. No `workspace_roots` present: still bails silently (unchanged behavior for that edge case).
+
+**`stop.py` audit:** no absolute-path assumption found. `stop.py` processes files from `pending_files` (already relative paths stored by `afterFileEdit`) and derives `project_root` from `workspace_roots`. No change needed.
+
+**`hooks/hooks.json` path audit:** `python3 ./scripts/X.py` commands are resolved relative to the plugin installation directory (not the project root) by Cursor's hook runner. The TAI-6 live probe confirmed hooks were firing correctly; the bug was in script logic, not path resolution. No change needed.
+
 ## [1.6.0] - 2026-04-25
 
 Adversarial test mode (V13). 181 tests.

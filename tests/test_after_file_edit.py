@@ -81,8 +81,9 @@ class TestInputValidation:
         assert rc == 0
         assert out == ""
 
-    def test_relative_file_path_no_output(self, tmp_path):
-        rc, out, _ = _run_hook(tmp_path, _event(tmp_path, file_path="src/billing.py"))
+    def test_relative_file_path_no_workspace_exits_silently(self, tmp_path):
+        event = {"file_path": "src/billing.py"}  # no workspace_roots
+        rc, out, _ = _run_hook(tmp_path, event)
         assert rc == 0
         assert out == ""
 
@@ -97,6 +98,24 @@ class TestInputValidation:
         )
         assert result.returncode == 0
         assert result.stdout == ""
+
+    def test_relative_file_path_with_workspace_root_accumulated(self, tmp_path):
+        # Cursor 3.7+ sends file_path relative; verify it is resolved and accumulated.
+        src = tmp_path / "src"
+        src.mkdir()
+        billing = src / "billing.py"
+        billing.write_text("def billing(): pass\n")
+        _write_session(tmp_path, _base_session())
+        event = {
+            "file_path": "src/billing.py",
+            "workspace_roots": [str(tmp_path)],
+        }
+        rc, out, _ = _run_hook(tmp_path, event)
+        assert rc == 0
+        assert out == ""
+        session = _read_session(tmp_path)
+        paths = [p["path"] for p in session["pending_files"]]
+        assert "src/billing.py" in paths
 
     def test_invalid_json_no_crash(self, tmp_path):
         import subprocess

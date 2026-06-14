@@ -31,10 +31,19 @@ def main() -> None:
         event = {}
 
     file_path: str = event.get("file_path", "")
-    if not file_path or not os.path.isabs(file_path):
+    if not file_path:
         return
 
     workspace_roots = event.get("workspace_roots", [])
+
+    # Cursor 3.7+ sends file_path as relative (e.g. "src/billing.py") with the
+    # absolute root in workspace_roots[0].  Resolve before the isabs check so the
+    # rest of the hook processes the file normally.
+    if not os.path.isabs(file_path):
+        if not workspace_roots:
+            return
+        file_path = os.path.normpath(os.path.join(workspace_roots[0], file_path))
+
     project_root: str = (
         workspace_roots[0] if workspace_roots
         else os.environ.get("CURSOR_PROJECT_DIR", os.path.dirname(os.path.abspath(file_path)))
